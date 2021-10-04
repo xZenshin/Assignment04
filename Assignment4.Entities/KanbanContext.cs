@@ -8,9 +8,9 @@ namespace Assignment4.Entities
     public class KanbanContext: DbContext
     {
 
-         public DbSet<Task> Cities { get; set; }
-        public DbSet<Tag> Powers { get; set; }
-        public DbSet<User> Characters { get; set; }
+         public DbSet<Task> Tasks { get; set; }
+        public DbSet<Tag> Tags { get; set; }
+        public DbSet<User> Users { get; set; }
 
         public KanbanContext(DbContextOptions<KanbanContext> options) : base(options) { }
 
@@ -20,6 +20,7 @@ namespace Assignment4.Entities
                 .Entity<Task>()
                 .Property(e => e.State)
                 .HasConversion<string>();
+
         }
     }
 }
