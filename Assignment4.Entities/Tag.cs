@@ -10,12 +10,6 @@ namespace Assignment4.Entities
         [Required]
         [KeyAttribute]
         public string Name { get; set; }
-        public ICollection<Task> Tasks { get; set; }
-        
-        
-        
-        
-        
-        
+        public ICollection<Task> Tasks { get; set; }        
     }
 }

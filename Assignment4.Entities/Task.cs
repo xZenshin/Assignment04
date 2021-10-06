@@ -20,21 +20,5 @@ namespace Assignment4.Entities
         public State State { get; set; }
 
         public ICollection<Tag> Tags { get; set; }
-
-
-        
-        
-
-        
-        
-
-        
-        
-
-        
-        
-
-
-
     }
 }
