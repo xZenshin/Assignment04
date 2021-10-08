@@ -36,26 +36,9 @@ namespace Assignment4.Entities
             context.Database.ExecuteSqlRaw("DELETE dbo.TagTask");
             context.Database.ExecuteSqlRaw("DBCC CHECKIDENT ('dbo.Users', RESEED, 0)");
             context.Database.ExecuteSqlRaw("DBCC CHECKIDENT ('dbo.Tasks', RESEED, 0)");
-            context.Database.ExecuteSqlRaw("DBCC CHECKIDENT ('dbo.Tags', RESEED, 0)"); 
- 
+            context.Database.ExecuteSqlRaw("DBCC CHECKIDENT ('dbo.Tags', RESEED, 0)");  
 
-            var Bob = new User {Name = "Bob",Email = "bob@gmail.com"};
-            var Carl = new User {Name = "Carl",Email = "carl1@gmail.com"};
-            var sa = new User {Name = "Carl",Email = "carl2@gmail.com"};   
-            var d = new User {Name = "Carl",Email = "carl3@gmail.com"};   
-
-            var addMethod = new Task { Title = "Add Method", Description = "Please create a new method", State = Core.State.Active};    
-            var removeUnusedCode = new Task { Title = "Remove unused code", Description = "Remove the code that is unused", State = Core.State.New};
             
-            context.Users.AddRange(Bob,Carl,d,sa);
-
-            context.Tags.AddRange(
-             new Tag {Name = "TODO"},
-             new Tag {Name = "Done"}
-            );
-            
-            context.Tasks.AddRange(addMethod,removeUnusedCode); 
-
             context.SaveChanges();
         }
     }

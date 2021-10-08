@@ -2,6 +2,8 @@ using System.Collections.Generic;
 
 namespace Assignment4.Core
 {
+    public record TaskDetailsCreateDTO(int Id, string Title, string Description, int? AssignedToId, string AssignedToName, 
+                                       string AssignedToEmail, IEnumerable<string> Tags, State state);
     public record TaskDetailsDTO
     {
         public int Id { get; init; }

@@ -21,7 +21,7 @@ namespace Assignment4.Entities
             
             foreach (var task in listoftasks)
             {
-                var tasktags = (from n in task.Tags select n.Name).ToList();
+                ReadOnlyCollection<string> tasktags = (from n in task.Tags select n.Name).ToList().AsReadOnly();
                 TaskDTO tempTaskDTO;
                 if(task.AssignedTo != null)
                 {
@@ -49,7 +49,7 @@ namespace Assignment4.Entities
            return new ReadOnlyCollection<TaskDTO>(readonlyTasks); 
         }
 
-        public int Create(TaskDTO task)
+        public Response Create(TaskDTO task)
         {
             User user = (from u in _context.Users
                         where u.Id == task.AssignedToId
@@ -67,32 +67,37 @@ namespace Assignment4.Entities
              _context.Tasks.Add(taskInput);   
              _context.SaveChanges();
 
-            return taskInput.Id;
+            return Response.Created;
         }
 
-        public void Delete(int taskId)
+        public Response Delete(int taskId)
         {
             var task = (from t in _context.Tasks where t.Id == taskId select t).FirstOrDefault();
+            if (task == null) return Response.NotFound;
+
             _context.Tasks.Remove(task);
             _context.SaveChanges();
+            return Response.Deleted;
         }
 
         public void Dispose()
         {
-            var tasks = (from t in _context.Tasks select t).ToList();
-            _context.Tasks.RemoveRange(tasks);
-            _context.SaveChanges();
+            _context.Dispose();
         }
 
         public TaskDetailsDTO FindById(int id)
         {
                 var task = (from t in _context.Tasks where t.Id == id select t).FirstOrDefault();
-                string username = task.AssignedTo.Name;
-                string useremail = task.AssignedTo.Email;
-                var tasktags = from n in task.Tags select n.Name;
+               
+                if(task == null) return null;
+               var tasktags = from n in task.Tags select n.Name;
+
                 
                 if(task.AssignedTo != null)
                 {
+                    string username = task.AssignedTo.Name;
+                    string useremail = task.AssignedTo.Email;
+            
                     int userid = task.AssignedTo.Id;
 
                     return new TaskDetailsDTO{
@@ -110,23 +115,23 @@ namespace Assignment4.Entities
                 Id = task.Id, 
                 Title = task.Title, 
                 Description = task.Description,  
-                AssignedToName = username,
-                AssignedToEmail = useremail, 
+                AssignedToName = "",
+                AssignedToEmail = "", 
                 Tags = tasktags,
                 State = task.State 
             };
         }
 
-        public void Update(TaskDTO task)
+        public Response Update(TaskDTO task)
         {
             var _task = (from t in _context.Tasks where t.Id==task.Id select t).FirstOrDefault();
             if(_task == null)
             {
-                Create(task);
-                return;
+                return Response.NotFound;
             }
             _context.Tasks.Update(_task);
             _context.SaveChanges();
+            return Response.Updated;
         }
     }
 }

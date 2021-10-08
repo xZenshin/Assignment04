@@ -23,8 +23,10 @@ namespace Assignment4.Entities
 
             modelBuilder.Entity<User>()
                 .HasKey(e => e.Id);
+        
             modelBuilder.Entity<Tag>()
-                .HasKey(e => e.Id);    
+                .HasKey(e => e.Id);   
+            ;        
 
         }
     }

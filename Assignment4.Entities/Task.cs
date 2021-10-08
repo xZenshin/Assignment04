@@ -7,6 +7,7 @@ namespace Assignment4.Entities
     
     public class Task
     {
+    
         public int Id { get; set; }
 
         [Required]
