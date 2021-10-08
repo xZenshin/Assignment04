@@ -16,40 +16,35 @@ namespace Assignment4.Entities
 
         public IReadOnlyCollection<TaskDTO> All()
         {
-           List<TaskDTO> readonlyTasks = new List<TaskDTO>();
-           
-          var listoftasks = (from t in _context.Tasks select t).ToList();
+            List<TaskDTO> readonlyTasks = new List<TaskDTO>();
+            var listoftasks = (from t in _context.Tasks select t).ToList();
             
             foreach (var task in listoftasks)
             {
-                
                 var tasktags = (from n in task.Tags select n.Name).ToList();
                 TaskDTO tempTaskDTO;
                 if(task.AssignedTo != null)
                 {
-                        tempTaskDTO = new TaskDTO {             
-                                        Id = task.Id, 
-                                        Title = task.Title, 
-                                        Description = task.Description, 
-                                        AssignedToId=task.AssignedTo.Id, 
-                                        Tags = tasktags,
-                                        State = task.State 
-                                        };
-
+                    tempTaskDTO = new TaskDTO {             
+                        Id = task.Id, 
+                        Title = task.Title, 
+                        Description = task.Description, 
+                        AssignedToId=task.AssignedTo.Id, 
+                        Tags = tasktags,
+                        State = task.State 
+                    };
                 }
                 else
                 {
                     tempTaskDTO = new TaskDTO {             
-                                        Id = task.Id, 
-                                        Title = task.Title, 
-                                        Description = task.Description, 
-                                        Tags = tasktags,
-                                        State = task.State 
-                                        };
+                        Id = task.Id, 
+                        Title = task.Title, 
+                        Description = task.Description, 
+                        Tags = tasktags,
+                        State = task.State 
+                    };
                 }
-
                 readonlyTasks.Add(tempTaskDTO);
-                
             }
            return new ReadOnlyCollection<TaskDTO>(readonlyTasks); 
         }
@@ -70,6 +65,7 @@ namespace Assignment4.Entities
                                 State = task.State};    
                                 
              _context.Tasks.Add(taskInput);   
+             _context.SaveChanges();
 
             return taskInput.Id;
         }
@@ -78,19 +74,19 @@ namespace Assignment4.Entities
         {
             var task = (from t in _context.Tasks where t.Id == taskId select t).FirstOrDefault();
             _context.Tasks.Remove(task);
+            _context.SaveChanges();
         }
 
         public void Dispose()
         {
             var tasks = (from t in _context.Tasks select t).ToList();
             _context.Tasks.RemoveRange(tasks);
+            _context.SaveChanges();
         }
 
         public TaskDetailsDTO FindById(int id)
         {
                 var task = (from t in _context.Tasks where t.Id == id select t).FirstOrDefault();
-                TaskDetailsDTO taskdetails;
-
                 string username = task.AssignedTo.Name;
                 string useremail = task.AssignedTo.Email;
                 var tasktags = from n in task.Tags select n.Name;
@@ -98,24 +94,27 @@ namespace Assignment4.Entities
                 if(task.AssignedTo != null)
                 {
                     int userid = task.AssignedTo.Id;
-                    taskdetails = new TaskDetailsDTO{Id = task.Id, 
-                                                    Title = task.Title, 
-                                                    Description = task.Description, 
-                                                    AssignedToId=userid, 
-                                                    AssignedToName = username, 
-                                                    AssignedToEmail = useremail, 
-                                                    Tags = tasktags,
-                                                    State = task.State };
-                    return taskdetails;
-                }
-            taskdetails = new TaskDetailsDTO{Id = task.Id, 
-                                                Title = task.Title, 
-                                                Description = task.Description,  
-                                                AssignedToName = username,                                                     AssignedToEmail = useremail, 
-                                                Tags = tasktags,
-                                                State = task.State };
-            return taskdetails;
 
+                    return new TaskDetailsDTO{
+                        Id = task.Id, 
+                        Title = task.Title, 
+                        Description = task.Description, 
+                        AssignedToId=userid, 
+                        AssignedToName = username, 
+                        AssignedToEmail = useremail, 
+                        Tags = tasktags,
+                        State = task.State 
+                    };
+                }
+            return new TaskDetailsDTO{
+                Id = task.Id, 
+                Title = task.Title, 
+                Description = task.Description,  
+                AssignedToName = username,
+                AssignedToEmail = useremail, 
+                Tags = tasktags,
+                State = task.State 
+            };
         }
 
         public void Update(TaskDTO task)
@@ -127,6 +126,7 @@ namespace Assignment4.Entities
                 return;
             }
             _context.Tasks.Update(_task);
+            _context.SaveChanges();
         }
     }
 }

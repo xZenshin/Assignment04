@@ -12,7 +12,16 @@ namespace Assignment4.Entities.Tests
 {
     public class TaskRepositoryTests 
     {
-        
+
+        private readonly KanbanContext _context;
+        private readonly TaskRepository _repository;
+
+        public TaskRepositoryTests()
+        {
+
+        }
+
+
         [Fact]
         public void All_returnsListOfAllTaskDTO()
         {
@@ -80,9 +89,6 @@ namespace Assignment4.Entities.Tests
 
             Assert.DoesNotContain(task,listoftasks);
 
-
-
         }
-
     }
 }
