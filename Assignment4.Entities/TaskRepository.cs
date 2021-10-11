@@ -9,12 +9,12 @@ namespace Assignment4.Entities
     {
         private readonly KanbanContext _context;
         
-        public  TaskRepository(KanbanContext context)
+        public TaskRepository(KanbanContext context)
         {
             _context = context;
         }  
 
-        public IReadOnlyCollection<TaskDTO> All()
+        public IReadOnlyCollection<TaskDTO> ReadAll()
         {
             List<TaskDTO> readonlyTasks = new List<TaskDTO>();
             var listoftasks = (from t in _context.Tasks select t).ToList();
