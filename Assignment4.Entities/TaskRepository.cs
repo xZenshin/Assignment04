@@ -21,7 +21,7 @@ namespace Assignment4.Entities
                 tags.Add((from t in _context.Tags where tagName == t.Name select t).First());    
             }
 
-             var entity = new Task
+            var newTask = new Task
             {
                 Title = task.Title,
                 AssignedTo = (from u in _context.Users where u.Id == task.AssignedToId select u).First(),
@@ -31,12 +31,12 @@ namespace Assignment4.Entities
                 Tags = tags,
                 StateUpdated = DateTime.UtcNow
             };
-
-            _context.Tasks.Add(entity);
-
+            _context.Tasks.Add(newTask);
             _context.SaveChanges();
-
-            return (Response.Created, entity.Id);
+            if (newTask !=null && newTask.AssignedTo != null) newTask.AssignedTo.Tasks.Add(newTask);
+            _context.SaveChanges();
+            
+            return (Response.Created, newTask.Id);
         }
         
          public IReadOnlyCollection<TaskDTO> ReadAll() => _context.Tasks.
@@ -87,7 +87,8 @@ namespace Assignment4.Entities
             
             if (task.AssignedToId != null)
             {
-                if (user == null) return Response.BadRequest;   
+                if (user == null) return Response.BadRequest; 
+    
             } 
             
             List<Tag> tags = new List<Tag>();
@@ -103,8 +104,11 @@ namespace Assignment4.Entities
             _task.Tags = tags;
             _task.State = task.State;
             _task.StateUpdated = DateTime.UtcNow;
-
+            
             _context.SaveChanges();
+            if(user!=null && _task!=null) user.Tasks.Add(_task);
+            _context.SaveChanges();
+             
 
             return Response.Updated;
         }

@@ -19,14 +19,5 @@ namespace Assignment4.Entities
         public string Email { get; set; }
 
         public ICollection<Task> Tasks { get; set; }
-
-
-        
-        
-
-        
-        
-        
-        
     }
 }
