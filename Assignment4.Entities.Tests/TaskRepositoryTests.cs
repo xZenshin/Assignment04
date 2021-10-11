@@ -44,7 +44,7 @@ namespace Assignment4.Entities.Tests
                             State = Core.State.Active},
                 new Task {Id = 2, Title = "Remove unused code", Description = "Remove the code that is unused", 
                             Tags = new ReadOnlyCollection<Tag>(new Tag[]{done}), 
-                            State = Core.State.New}
+                            State = Core.State.Removed}
             ); 
 
             context.SaveChanges();
@@ -52,46 +52,115 @@ namespace Assignment4.Entities.Tests
             _context = context;
             _repository = new TaskRepository(_context);
         }
-
-
+        
         [Fact]
-        public void All_returnsListOfAllTaskDTO()
+        public void Create_createsANewTaskDTO()
         {
-            var tasks = _repository.All();
+            var task = new TaskCreateDTO{
+                                    Title ="Task1", 
+                                    AssignedToId = 1,
+                                    Description="Description1", 
+                                    Tags = new ReadOnlyCollection<string>(new string[]{"Done","TODO"}),                                    
+            };
+            
+            var created = _repository.Create(task);
+
+            Assert.Equal((Response.Created,3), created);
+        }
+        
+        [Fact]
+        public void ReadAll_returnsListOfAllTaskDTO()
+        {
+            var tasks = _repository.ReadAll();
             
             TaskDTO actual_t1 = tasks.First();
             TaskDTO actual_t2 = tasks.Skip(1).Take(1).First();
             
             Assert.Equal(1, actual_t1.Id);
             Assert.Equal("Add Method", actual_t1.Title);
-            Assert.Equal("Please create a new method", actual_t1.Description);
-            Assert.Null(actual_t1.AssignedToId);
+            Assert.Null(actual_t1.AssignedToName);
             Assert.True(actual_t1.Tags.ToList().SequenceEqual(new [] {"TODO"}));
             Assert.Equal(State.Active, actual_t1.State);
 
             Assert.Equal(2, actual_t2.Id);
             Assert.Equal("Remove unused code", actual_t2.Title);
-            Assert.Equal("Remove the code that is unused", actual_t2.Description);
-            Assert.Null(actual_t2.AssignedToId);
+            Assert.Null(actual_t2.AssignedToName);
             Assert.True(actual_t2.Tags.ToHashSet().SetEquals(new [] {"Done"}));
-            Assert.Equal(State.New, actual_t2.State);
+            Assert.Equal(State.Removed, actual_t2.State);
         }
 
         [Fact]
-        public void Create_createsANewTaskDTO()
+        public void Read_returnsTaskWithID()
         {
+            var task = _repository.Read(1);
             
-            var task = new TaskDTO{
-                                    Title ="Task1", 
-                                    Description="Description1", 
-                                    Tags = new ReadOnlyCollection<string>(new string[]{"tag1","tag2"}),
-                                    State = State.New
-            };
-            
-            var created = _repository.Create(task);
-            Assert.Equal(Response.Created, created);
+            Assert.Equal(1, task.Id);
+            Assert.Equal("Add Method", task.Title);
+            Assert.Equal("Please create a new method", task.Description);
+            Assert.Null(task.AssignedToName);
+            Assert.True(task.Tags.ToList().SequenceEqual(new [] {"TODO"}));
+            Assert.Equal(State.Active, task.State);
         }
 
+        [Fact]
+        public void ReadAllRemoved_returnsAllStatesRemoved()
+        {
+            var task = _repository.ReadAllRemoved().First();
+
+            Assert.Equal(2, task.Id);
+            Assert.Equal("Remove unused code", task.Title);
+            Assert.Null(task.AssignedToName);
+            Assert.True(task.Tags.ToList().SequenceEqual(new [] {"Done"}));
+            Assert.Equal(State.Removed, task.State);
+        }
+
+        [Fact]
+        public void ReadAllByTag_returnsTaskWithId()
+        {
+            var task = _repository.ReadAllByTag("Done").First();
+
+            Assert.Equal(2, task.Id);
+            Assert.Equal("Remove unused code", task.Title);
+            Assert.Null(task.AssignedToName);
+            Assert.True(task.Tags.ToList().SequenceEqual(new [] {"Done"}));
+            Assert.Equal(State.Removed, task.State);
+        }
+
+        [Fact]
+        public void ReadAllByUser_givenId2_returnsTaskWithId1()
+        {
+            TaskUpdateDTO t = new TaskUpdateDTO{
+                Id = 1,
+                Title = "task1",
+                AssignedToId = 1,
+                Description = "description1",
+                Tags = new string[]{"TODO"},
+                State = State.Closed,
+            };
+
+            _repository.Update(t);
+
+            var task = _repository.ReadAllByUser(1).First();
+
+            Assert.Equal(1, task.Id);
+            Assert.Equal("task1", task.Title);
+            Assert.Equal("Bob",task.AssignedToName);
+            Assert.True(task.Tags.ToList().SequenceEqual(new [] {"TODO"}));
+            Assert.Equal(State.Closed, task.State);            
+        }
+
+        [Fact]
+        public void ReadAllByState_returns()
+        {
+            var task = _repository.ReadAllByState(State.Active).First();
+
+            Assert.Equal(1, task.Id);
+            Assert.Equal("Add Method", task.Title);
+            Assert.Null(task.AssignedToName);
+            Assert.True(task.Tags.ToList().SequenceEqual(new [] {"TODO"}));
+            Assert.Equal(State.Active, task.State);
+        }
+        
         [Fact]
         public void Delete_givenTaskId_deletesTask()
         {
@@ -100,30 +169,16 @@ namespace Assignment4.Entities.Tests
         }
 
         [Fact]
-        public void FindById_returnsTaskWithID()
-        {
-            var task = _repository.FindById(1);
-            
-            Assert.Equal(1, task.Id);
-            Assert.Equal("Add Method", task.Title);
-            Assert.Equal("Please create a new method", task.Description);
-            Assert.Equal("", task.AssignedToName);
-            Assert.Equal("", task.AssignedToEmail);
-            Assert.True(task.Tags.ToList().SequenceEqual(new [] {"TODO"}));
-            Assert.Equal(State.Active, task.State);
-        }
-
-        [Fact]
         public void FindById_returnsNull()
         {
-            var task = _repository.FindById(4);
+            var task = _repository.Read(4);
             Assert.Null(task);
         }
 
         [Fact]
         public void Update_returnsUpdated()
         {
-            TaskDTO updatedTask = new TaskDTO {
+            TaskUpdateDTO updatedTask = new TaskUpdateDTO {
                             Id = 1, Title = "Add Method", Description = "Please create a new method",  
                             Tags = new ReadOnlyCollection<string>(new string[]{"TODO"}),
                             State = Core.State.Closed
@@ -131,19 +186,19 @@ namespace Assignment4.Entities.Tests
             
             var update = _repository.Update(updatedTask);
             Assert.Equal(Response.Updated, update);
-
         }
 
         [Fact]
         public void Update_returnsNotFound() 
         {
-            TaskDTO updatedTask = new TaskDTO {Id = 27, Title = "Add Method", Description = "Please create a new method",  
+            TaskUpdateDTO updatedTask = new TaskUpdateDTO {Id = 27, Title = "Add Method", Description = "Please create a new method",  
                             Tags = new ReadOnlyCollection<string>(new string[]{"todo"}),
                             State = Core.State.Active};
             var update = _repository.Update(updatedTask);
             Assert.Equal(Response.NotFound, update);
         }
 
+        // Tear down, deconstruction
         public void Dispose()
         {
             _context.Dispose();
