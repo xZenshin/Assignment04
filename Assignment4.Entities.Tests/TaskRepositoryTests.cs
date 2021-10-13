@@ -139,7 +139,12 @@ namespace Assignment4.Entities.Tests
 
             _repository.Update(t);
 
+            //Test to see if user has task added automaticly    
             var task = _repository.ReadAllByUser(1).First();
+            var user = _context.Users.First();
+            var usersTask = user.Tasks.First();
+            Assert.Equal(usersTask.Title,"task1");
+            //--------------------------------------------------
 
             Assert.Equal(1, task.Id);
             Assert.Equal("task1", task.Title);

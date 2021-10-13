@@ -33,8 +33,8 @@ namespace Assignment4.Entities
             };
             _context.Tasks.Add(newTask);
             _context.SaveChanges();
-            if (newTask !=null && newTask.AssignedTo != null) newTask.AssignedTo.Tasks.Add(newTask);
-            _context.SaveChanges();
+            //if (newTask !=null && newTask.AssignedTo != null) newTask.AssignedTo.Tasks.Add(newTask);
+            //_context.SaveChanges();
             
             return (Response.Created, newTask.Id);
         }
@@ -106,8 +106,8 @@ namespace Assignment4.Entities
             _task.StateUpdated = DateTime.UtcNow;
             
             _context.SaveChanges();
-            if(user!=null && _task!=null) user.Tasks.Add(_task);
-            _context.SaveChanges();
+            //if(user!=null && _task!=null) user.Tasks.Add(_task);
+            //_context.SaveChanges();
              
 
             return Response.Updated;
