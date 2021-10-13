@@ -13,6 +13,7 @@ namespace Assignment4.Entities
         {
             _context = context;
         }  
+        
         public (Response Response, int TaskId) Create(TaskCreateDTO task)
         {
             List<Tag> tags = new List<Tag>();
@@ -33,8 +34,6 @@ namespace Assignment4.Entities
             };
             _context.Tasks.Add(newTask);
             _context.SaveChanges();
-            //if (newTask !=null && newTask.AssignedTo != null) newTask.AssignedTo.Tasks.Add(newTask);
-            //_context.SaveChanges();
             
             return (Response.Created, newTask.Id);
         }
@@ -105,10 +104,7 @@ namespace Assignment4.Entities
             _task.State = task.State;
             _task.StateUpdated = DateTime.UtcNow;
             
-            _context.SaveChanges();
-            //if(user!=null && _task!=null) user.Tasks.Add(_task);
-            //_context.SaveChanges();
-             
+            _context.SaveChanges();             
 
             return Response.Updated;
         }

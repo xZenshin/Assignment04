@@ -9,9 +9,10 @@ using System.Linq;
 
 namespace Assignment4.Entities.Tests
 {
+       
     public class TaskRepositoryTests  : IDisposable
     {
-
+         #region Setup
         private readonly KanbanContext _context;
         private readonly TaskRepository _repository;
 
@@ -52,6 +53,7 @@ namespace Assignment4.Entities.Tests
             _context = context;
             _repository = new TaskRepository(_context);
         }
+        #endregion 
         
         [Fact]
         public void Create_createsANewTaskDTO()

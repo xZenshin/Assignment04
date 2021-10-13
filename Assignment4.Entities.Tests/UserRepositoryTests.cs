@@ -9,8 +9,10 @@ namespace Assignment4.Entities.Tests
 {
     public class UserRepositoryTests
     {
+        #region Setup
         private readonly KanbanContext _context;
         private readonly UserRepository _repository;
+        private readonly TaskRepository _taskRepository;
 
         public UserRepositoryTests()
         {
@@ -48,7 +50,9 @@ namespace Assignment4.Entities.Tests
 
             _context = context;
             _repository = new UserRepository(_context);
+            _taskRepository = new TaskRepository(_context);
         }
+        #endregion 
 
         [Fact]
         public void Create_returnsTupleOfResponseAndUserId()
@@ -78,27 +82,59 @@ namespace Assignment4.Entities.Tests
         [Fact]
         public void Delete_givenUserWithTaskAndForce()
         {
-        //Given
-        
-        //When
-        
-        //Then
+            TaskUpdateDTO t = new TaskUpdateDTO{
+                Id = 1,
+                Title = "task1",
+                AssignedToId = 1,
+                Description = "description1",
+                Tags = new string[]{"TODO"},
+                State = State.Closed,
+            };
+            _taskRepository.Update(t);
+
+            var deleted = _repository.Delete(1, true);
+            
+            Assert.Equal(Response.Deleted, deleted);
         }
+        
         [Fact]
-        public void Delete_givenUserWithTaskAndWithoutForce()
+        public void Delete_givenUserWithTaskAndWithoutForce_returnsConflict()
         {
-        //Given
-        
-        //When
-        
-        //Then
+               TaskUpdateDTO t = new TaskUpdateDTO{
+                Id = 1,
+                Title = "task1",
+                AssignedToId = 1,
+                Description = "description1",
+                Tags = new string[]{"TODO"},
+                State = State.Closed,
+            };
+            _taskRepository.Update(t);
+
+            var deleted = _repository.Delete(1);
+            
+            Assert.Equal(Response.Conflict, deleted);
         }
 
 
         [Fact]
         public void Read_returns_userDTO_with_id_corresponding_to_input()
         {
-            
+            var user = _repository.Read(1);
+
+            Assert.Equal(new UserDTO(1, "Bob", "bob@gmail.com"), user);
+        }
+
+        [Fact]
+        public void ReadAll_ReturnsAllUsers()
+        {
+            var users = _repository.ReadAll();
+
+            Assert.Collection(users,
+                c => Assert.Equal(new UserDTO(1, "Bob", "bob@gmail.com"), c),
+                c => Assert.Equal(new UserDTO(2, "Carl", "carl1@gmail.com"), c),
+                c => Assert.Equal(new UserDTO(3, "Ib", "ib@gmail.com"), c),
+                c => Assert.Equal(new UserDTO(4, "Bo", "bo@gmail.com"), c)
+            );
         }
 
         [Fact]
@@ -113,6 +149,7 @@ namespace Assignment4.Entities.Tests
             var update = _repository.Update(updatedTask);
             Assert.Equal(Response.Updated, update);
         }
+        
         [Fact]
         public void Update_givenExistingEmail_ReturnsConflict()
         {
@@ -123,12 +160,6 @@ namespace Assignment4.Entities.Tests
             };
             var update = _repository.Update(updatedTask);
             Assert.Equal(Response.Conflict, update);
-        }
-
-        [Fact]
-        public void Delete_returnsResponseAndDeletesUser()
-        {
-            
         }
     }
 }

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Assignment4.Core;
 using System.Linq;
+using System;
 
 namespace Assignment4.Entities
 {
@@ -12,6 +13,7 @@ namespace Assignment4.Entities
         {
             _context = context;
         }
+
         public (Response Response, int UserId) Create(UserCreateDTO user)
         {
             var emails = _context.Users.Select(u => u.Email);
@@ -32,12 +34,12 @@ namespace Assignment4.Entities
         {
             var user = _context.Users.Find(userId);
 
+            if (user == null) return Response.NotFound;
+            
             if (user.Tasks != null)
             {
                 if (force)
                 {
-                    if (user == null) return Response.NotFound;
-
                     _context.Users.Remove(user);
                     _context.SaveChanges();
                     
@@ -56,13 +58,19 @@ namespace Assignment4.Entities
 
         public UserDTO Read(int userId)
         {
-            throw new System.NotImplementedException();
+            var user = from u in _context.Users
+                        where u.Id == userId
+                        select new UserDTO(
+                            u.Id,
+                            u.Name,
+                            u.Email
+                        );
+
+            return user.FirstOrDefault();
         }
 
-        public IReadOnlyCollection<UserDTO> ReadAll()
-        {
-            throw new System.NotImplementedException();
-        }
+        public IReadOnlyCollection<UserDTO> ReadAll() => 
+            _context.Users.Select(u => new UserDTO(u.Id, u.Name, u.Email)).ToList().AsReadOnly();
 
         //Complete and tested
         public Response Update(UserUpdateDTO user)
